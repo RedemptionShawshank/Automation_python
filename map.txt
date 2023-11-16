@@ -1,1 +1,29 @@
+1. Since mid-January, I have been actively involved in the migration of ICUE data to Snowflake.
 
+2. During the initial months of my involvement in the project, I focused on gaining a comprehensive understanding of sink and migration services.
+
+3. I have successfully developed tables spanning various domains, including HSC, Care Plan, Care Management, Advc, Individual, and ICUE operational metadata.
+
+4. I played a significant role in monitoring the production environment for the mentioned domains.
+
+5. Identified and rectified vulnerabilities within the repositories of the sink and migration services.
+
+6. Actively managed the deployment of all tables in development, staging, and production environments.
+
+7. Maintained a consistently high score on Origin for the repositories assigned to me.
+
+
+1. To enhance efficiency, I've implemented Python scripts for automating our daily tasks, reducing errors and saving time in the development and testing of tables in both the development and staging environments.
+
+2. I've nearly automated the script generation for the migration service, addressing manual edits and repetitive tasks to significantly decrease errors. This automation has been successfully demonstrated to the team.
+
+3. Automation has been applied to the code aspect of table development in the sink service and schema validation. Although completed, a demonstration of this automation is pending.
+
+4. Collaborating with my teammate, I consistently explore opportunities to automate aspects of our work, aiming to contribute to the team's efficiency and facilitate the delivery of outstanding results.
+
+
+1. My primary goal is continuous self-improvement, and I am committed to consistently upskilling myself.
+
+2. Recently, I successfully completed the AZ-900 course to gain a foundational understanding of cloud computing and various Azure services.
+
+3. Concurrently, I have a keen interest in data analysis and data science using Python. I recently attended an internal Optum team's online session on the basics of data science, where they showcased their utilization of patients' data to predict various scenarios related to health. This experience has inspired me to further enhance my skills in the field of data science.
