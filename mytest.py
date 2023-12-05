@@ -64,3 +64,23 @@ if coordinates:
 else:
     print("Unable to retrieve cursor coordinates.")
     
+
+
+
+import pyautogui
+
+def get_cursor_coordinates():
+    try:
+        x, y = pyautogui.position()
+        return x, y
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+# Example usage
+coordinates = get_cursor_coordinates()
+if coordinates:
+    print(f"Cursor Coordinates: {coordinates}")
+else:
+    print("Unable to retrieve cursor coordinates.")
+    
