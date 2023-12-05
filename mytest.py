@@ -23,3 +23,16 @@ sql_content_no_comments = ';\n'.join(ddl_statements_no_comments)
 
 # Print or save the result
 print(sql_content_no_comments)
+
+
+
+
+import subprocess
+
+def switch_app(app_name):
+    applescript_command = f'tell application "{app_name}" to activate'
+    subprocess.run(["osascript", "-e", applescript_command])
+
+# Example: Switch to Safari
+switch_app("Safari")
+
