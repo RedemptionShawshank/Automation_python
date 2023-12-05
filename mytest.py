@@ -41,3 +41,26 @@ switch_app("Safari")
 ioreg -c IOHIDSystem | awk '/HIDMouse/ || /HIDTablet/ {print $1, $2, $3, $10, $11, $12}' | sed 's/[^[:digit:][:space:]]//g'
 
 
+
+
+
+import subprocess
+
+def get_cursor_coordinates():
+    command = "ioreg -c IOHIDSystem | awk '/HIDMouse/ || /HIDTablet/ {print $1, $2, $3, $10, $11, $12}' | sed 's/[^[:digit:][:space:]]//g'"
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, text=True)
+    output = result.stdout.strip().split()
+    
+    if len(output) == 2:
+        x_coordinate, y_coordinate = map(int, output)
+        return x_coordinate, y_coordinate
+    else:
+        return None
+
+# Example usage
+coordinates = get_cursor_coordinates()
+if coordinates:
+    print(f"Cursor Coordinates: {coordinates}")
+else:
+    print("Unable to retrieve cursor coordinates.")
+    
