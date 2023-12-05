@@ -36,3 +36,8 @@ def switch_app(app_name):
 # Example: Switch to Safari
 switch_app("Safari")
 
+
+
+ioreg -c IOHIDSystem | awk '/HIDMouse/ || /HIDTablet/ {print $1, $2, $3, $10, $11, $12}' | sed 's/[^[:digit:][:space:]]//g'
+
+
