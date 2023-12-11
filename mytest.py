@@ -83,4 +83,12 @@ if coordinates:
     print(f"Cursor Coordinates: {coordinates}")
 else:
     print("Unable to retrieve cursor coordinates.")
+
+
+
+
+
+
+
+Stored procedure execution error: Scoped transaction started in stored procedure is incomplete and it was rolled back.
     
