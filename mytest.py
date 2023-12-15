@@ -91,4 +91,58 @@ else:
 
 
 Stored procedure execution error: Scoped transaction started in stored procedure is incomplete and it was rolled back.
+
+
+
+
+import subprocess
+import pyautogui as pg
+import time
+
+def switch_app(app_name):
+    applescript_command = f'tell application "{app_name}" to activate'
+    subprocess.run(["osascript", "-e", applescript_command])
+
+
+switch_app("Microsoft Teams classic")
+cd = [(1697,60),(1475,157),(1536,331)]
+pg.moveTo(cd[0][0],cd[0][1])
+time.sleep(1)
+for coordinates in cd:
+    pg.click(coordinates[0],coordinates[1])
+    pg.PAUSE=1
+    pg.mouseUp(coordinates[0], coordinates[1])
+
+
+
+import subprocess
+import pyautogui as pg
+import time
+
+def switch_app(app_name):
+    applescript_command = f'tell application "{app_name}" to activate'
+    subprocess.run(["osascript", "-e", applescript_command])
+
+
+app_a = "Microsoft Teams classic"
+app_b = "Google Chrome"
+
+interval = 5
+
+try:
+    while True:
+        switch_app(app_a)
+
+        time.sleep(interval)
+        # pg.leftClick(x=244,y=101)
+        pg.mouseDown(x=1697,y=60)
+        pg.PAUSE = 1
+        pg.mouseUp(x=1697, y=60)
+
+        switch_app(app_b)
+
+        time.sleep(interval)
+
+except KeyboardInterrupt:
+    print("terminated")
     
