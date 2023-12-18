@@ -145,4 +145,12 @@ try:
 
 except KeyboardInterrupt:
     print("terminated")
-    
+
+
+
+
+
+java: cannot access org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+  bad class file: /Users/skumarv3/.m2/repository/org/springframework/spring-web/6.0.0/spring-web-6.0.0.jar!/org/springframework/http/client/HttpComponentsClientHttpRequestFactory.class
+    class file has wrong version 61.0, should be 55.0
+    Please remove or make sure it appears in the correct subdirectory of the classpath.
