@@ -1,2 +1,6 @@
 pandas
 openpyxl
+
+var currentReconTstmp = currentDateRecon.getFullYear() + "-" +('0' + (currentDateRecon.getMonth() + 1)).slice(-2) + "-" +
+                                 ('0' + currentDateRecon.getDate()).slice(-2) + " " +('0' + currentDateRecon.getHours()).slice(-2) + ":" +
+                                 ('0' + currentDateRecon.getMinutes()).slice(-2) + ":" + ('0' + currentDateRecon.getSeconds()).slice(-2);
