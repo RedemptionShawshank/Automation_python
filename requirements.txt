@@ -4,3 +4,89 @@ openpyxl
 var currentReconTstmp = currentDateRecon.getFullYear() + "-" +('0' + (currentDateRecon.getMonth() + 1)).slice(-2) + "-" +
                                  ('0' + currentDateRecon.getDate()).slice(-2) + " " +('0' + currentDateRecon.getHours()).slice(-2) + ":" +
                                  ('0' + currentDateRecon.getMinutes()).slice(-2) + ":" + ('0' + currentDateRecon.getSeconds()).slice(-2);
+
+
+
+
+
+CREATE OR REPLACE PROCEDURE ECT_DEV_ASSESSMENT_DB.ETL.ICUE_RECON_POC_TEST(
+    srcTable varchar,
+    metadataDatabase varchar,
+    metadataTableSchema varchar,
+    metadataTable varchar,
+    targetDatabase varchar,
+    targetSchema varchar,
+    etlTable varchar,
+    reconTable varchar,
+    strArray variant,
+)
+RETURNS STRING
+LANGUAGE JAVASCRIPT
+EXECUTE AS CALLER
+AS
+$$
+
+var columnsMetadata='';
+var columnsETL='';
+var keyNum = strArray.length;
+var colArray = ['SRC_COL1','SRC_COL2','SRC_COL3'];
+for(var i=0;i<keyNum;i++){
+
+    if(i != keyNum-1){
+        columnsMetadata+='s.'+colArray[i]+',';
+        columnsETL+='t.'+strArray[i]+',';
+    }
+    else{
+        columnsMetadata+='s.'+colArray[i];
+        columnsETL+='t.'+strArray[i];
+    }
+}
+
+var currentDateRecon=new Date();
+
+var currentDate=new Date();
+var previousDate=new Date(currentDate);
+previousDate.setDate(currentDate.getDate()-1);
+
+var upperLimitChgdttm = previousDate.getFullYear() + "-" +('0' + (previousDate.getMonth() + 1)).slice(-2) + "-" +
+                                 ('0' + previousDate.getDate()).slice(-2) + " " + "23:59:59.999" ;
+
+var lowerLimitChgdttm = previousDate.getFullYear() + "-" +('0' + (previousDate.getMonth() + 1)).slice(-2) + "-" +
+                                 ('0' + previousDate.getDate()).slice(-2) + " " + "00:00:00.000" ;
+
+var currentReconTstmp = currentDateRecon.getFullYear() + "-" +('0' + (currentDateRecon.getMonth() + 1)).slice(-2) + "-" +
+                                 ('0' + currentDateRecon.getDate()).slice(-2) + " " +('0' + currentDateRecon.getHours()).slice(-2) + ":" +
+                                 ('0' + currentDateRecon.getMinutes()).slice(-2) + ":" + ('0' + currentDateRecon.getSeconds()).slice(-2);
+                      
+
+var resultData = "ICUE POC RECON PROCESSING - Current Date  : "+currentDateRecon+' Dev- ';                                        
+var query = `SELECT ${srcTable},to_timestamp(to_char(s.CHG_DTTM),'YYYY-MM-DD HH:MI:SS.FF'),to_timestamp(to_char(s.CREAT_DTTM),'YYYY-MM-DD HH:MI:SS.FF') ,${columnsMetadata} FROM (SELECT * FROM ${metadataDatabase}.${metadataTableSchema}.${metadataTable} WHERE SRC_TABLE_NM=${srcTable} CHG_DTTM<=${upperLimitChgdttm} AND CHG_DTTM>=${lowerLimitChgdttm}) s MINUS SELECT t.STG_TBL_NM, t.SRC_SYS_UPDT_DTTM,t.SRC_SYS_CREAT_DTTM,${columnsETL} FROM ${targetDatabase}.${targetSchema}.${etlTable} t`;
+var stmt = snowflake.createStatement({sqlText: query});
+var resultSet = stmt.execute();
+ 
+var srcCol1KeyValOther = -1;
+ 
+var srcDBNM = 'ECT_DEV_ASSESSMENT_DB';
+ 
+while(resultSet.next()) {                   
+                                 
+var dateCHGDTTM = resultSet.getColumnValue(1);
+var dateCREATDTTM = resultSet.getColumnValue(2);
+ 
+var srcCol1KeyVal = resultSet.getColumnValue(3);
+ 
+resultData += ' +CHG_DTTM : ' +dateCHGDTTM+ 'end-OF-row '+currentReconTstmp;
+ 
+sql_command = 'INSERT INTO ${targetDatabase}.${targetSchema}.${reconTable} VALUES(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10)' ;
+ 
+var resultInsrt = snowflake.execute(
+        {
+        sqlText: sql_command,
+        binds: [srcSchema,srcTable,currentReconTstmp,dateCREATDTTM,dateCHGDTTM,dateCHGDTTM,
+        srcCol1KeyVal,srcCol1KeyValOther,srcCol1KeyValOther]
+        }
+        );
+ 
+}     
+return resultData;
+$$;
