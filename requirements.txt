@@ -90,3 +90,26 @@ var resultInsrt = snowflake.execute(
 }     
 return resultData;
 $$;
+
+
+
+
+
+
+
+
+
+
+
+var col1 = columnsMetadata.split(',');
+var strArray = 'AUD_DTL_ID,AUD_ID';
+var col2 = strArray.split(',');
+
+var condition1= `SRC_TABLE_NM ='${srcTable}' AND CHG_DTTM<='${upperLimitChgdttm}' AND CHG_DTTM>='${lowerLimitChgdttm}' s)`;
+
+var condition2= `SRC_SYS_UPDT_DTTM<='${upperLimitChgdttm}' AND SRC_SYS_UPDT_DTTM>='${upperLimitChgdttm}'`;
+
+var query = `SELECT CHG_DTTM,CREAT_DTTM,${col1.join(', ')} FROM (SELECT * FROM ETL.ICUE_SRC_METADATA_TBL_TEST WHERE ${condition1} MINUS SELECT SRC_SYS_UPDT_DTTM,SRC_SYS_CREAT_DTTM,${col2.join(', ')} FROM ETL.DW_ASMT_AUD_TEST WHERE ${condition2}`;
+
+
+SELECT CHG_DTTM,CREAT_DTTM, SRC_COL1,SRC_COL2 FROM (SELECT * FROM ETL.ICUE_SRC_METADATA_TBL_TEST WHERE SRC_TABLE_NM = 'ASMT_AUD_T' AND CHG_DTTM<='2024-02-17 23:59:59.999' AND CHG_DTTM>='2024-02-17 00:00:00.000') MINUS SELECT SRC_SYS_UPDT_DTTM,SRC_SYS_CREAT_DTTM,AUD_DTL_ID,AUD_ID FROM ETL.DW_ASMT_AUD_TEST WHERE SRC_SYS_UPDT_DTTM<='2024-02-17 23:59:59.999' AND SRC_SYS_UPDT_DTTM>='2024-02-17 00:00:00.000';
