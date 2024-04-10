@@ -1,0 +1,36 @@
+import spock.lang.Specification
+import org.apache.avro.Schema
+import org.apache.avro.generic.GenericData
+import org.apache.avro.generic.GenericRecord
+import org.apache.avro.util.Utf8
+
+class MySpec extends Specification {
+
+    def "test method with GenericRecord argument"() {
+        given:
+        // Define Avro schema for GenericRecord
+        String schemaString = "{ \"type\": \"record\", \"name\": \"User\", " +
+                "\"fields\": [ {\"name\": \"name\", \"type\": \"string\"}, " +
+                "{ \"name\": \"age\", \"type\": \"int\"}]}";
+        Schema.Parser parser = new Schema.Parser();
+        Schema schema = parser.parse(schemaString);
+
+        // Create sample GenericRecord
+        def sampleRecord = new GenericData.Record(schema)
+        sampleRecord.put("name", new Utf8("John"))
+        sampleRecord.put("age", 30)
+
+        // Call the method under test with the sample GenericRecord
+        def result = myMethod(sampleRecord)
+
+        then:
+        // Assert the result if needed
+        // assert result == expectedValue
+    }
+
+    def myMethod(GenericRecord record) {
+        // Your method logic here
+        // You can access fields of the GenericRecord like record.get("fieldName")
+        // and perform operations accordingly
+    }
+}
