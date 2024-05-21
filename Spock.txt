@@ -1,36 +1,25 @@
-import spock.lang.Specification
-import org.apache.avro.Schema
-import org.apache.avro.generic.GenericData
-import org.apache.avro.generic.GenericRecord
-import org.apache.avro.util.Utf8
+resource "azuread_application" "example" {
+  display_name = "Your Spring Boot API"
+}
 
-class MySpec extends Specification {
+resource "azuread_service_principal" "example" {
+  application_id = azuread_application.example.application_id
+}
 
-    def "test method with GenericRecord argument"() {
-        given:
-        // Define Avro schema for GenericRecord
-        String schemaString = "{ \"type\": \"record\", \"name\": \"User\", " +
-                "\"fields\": [ {\"name\": \"name\", \"type\": \"string\"}, " +
-                "{ \"name\": \"age\", \"type\": \"int\"}]}";
-        Schema.Parser parser = new Schema.Parser();
-        Schema schema = parser.parse(schemaString);
+resource "azuread_application_password" "example" {
+  application_object_id = azuread_application.example.object_id
+  value                 = "YOUR_GENERATED_SECRET"
+  end_date_relative     = "240h"
+}
 
-        // Create sample GenericRecord
-        def sampleRecord = new GenericData.Record(schema)
-        sampleRecord.put("name", new Utf8("John"))
-        sampleRecord.put("age", 30)
+output "client_id" {
+  value = azuread_application.example.application_id
+}
 
-        // Call the method under test with the sample GenericRecord
-        def result = myMethod(sampleRecord)
+output "client_secret" {
+  value = azuread_application_password.example.value
+}
 
-        then:
-        // Assert the result if needed
-        // assert result == expectedValue
-    }
-
-    def myMethod(GenericRecord record) {
-        // Your method logic here
-        // You can access fields of the GenericRecord like record.get("fieldName")
-        // and perform operations accordingly
-    }
+output "tenant_id" {
+  value = data.azurerm_client_config.example.tenant_id
 }
