@@ -11,7 +11,8 @@ public class JksToPemConverter {
     public static void main(String[] args) {
         String keystoreFilePath = "path/to/keystore.jks";  // Replace with your keystore path
         String keystorePassword = "yourKeystorePassword";  // Replace with your keystore password
-        String alias = "yourAlias";                        // Replace with your alias
+        String privateKeyAlias = "yourPrivateKeyAlias";    // Replace with your private key alias
+        String certificateAlias = "yourCertificateAlias";  // Replace with your certificate alias
 
         try {
             // Load the JKS keystore
@@ -19,35 +20,32 @@ public class JksToPemConverter {
             KeyStore keystore = KeyStore.getInstance("JKS");
             keystore.load(is, keystorePassword.toCharArray());
 
-            // Extract the private key
-            Key key = keystore.getKey(alias, keystorePassword.toCharArray());
-            if (key == null) {
-                throw new Exception("No key found for alias: " + alias);
+            // Extract the private key using its alias
+            Key privateKey = keystore.getKey(privateKeyAlias, keystorePassword.toCharArray());
+            if (privateKey == null) {
+                throw new Exception("No private key found for alias: " + privateKeyAlias);
             }
 
-            // Extract the certificate chain
-            Certificate[] certChain = keystore.getCertificateChain(alias);
-            if (certChain == null) {
-                throw new Exception("No certificate found for alias: " + alias);
+            // Extract the certificate using its alias
+            Certificate certificate = keystore.getCertificate(certificateAlias);
+            if (certificate == null) {
+                throw new Exception("No certificate found for alias: " + certificateAlias);
             }
 
             // Convert the private key to PEM format
-            String privateKeyPem = convertToPem("PRIVATE KEY", key.getEncoded());
+            String privateKeyPem = convertToPem("PRIVATE KEY", privateKey.getEncoded());
 
-            // Convert each certificate in the chain to PEM format
-            StringBuilder certsPem = new StringBuilder();
-            for (Certificate cert : certChain) {
-                certsPem.append(convertToPem("CERTIFICATE", cert.getEncoded()));
-            }
+            // Convert the certificate to PEM format
+            String certificatePem = convertToPem("CERTIFICATE", certificate.getEncoded());
 
             // Write the private key PEM to a file
             try (Writer writer = new OutputStreamWriter(new FileOutputStream("private-key.pem"), "UTF-8")) {
                 writer.write(privateKeyPem);
             }
 
-            // Write the certificates PEM to a file
+            // Write the certificate PEM to a file
             try (Writer writer = new OutputStreamWriter(new FileOutputStream("certificate.pem"), "UTF-8")) {
-                writer.write(certsPem.toString());
+                writer.write(certificatePem);
             }
 
             System.out.println("Conversion complete. PEM files generated: private-key.pem, certificate.pem");
