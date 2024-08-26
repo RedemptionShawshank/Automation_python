@@ -63,3 +63,50 @@ public class JksToPemConverter {
         return pem.toString();
     }
 }
+
+
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+
+public class JksToPfxConverter {
+    public static void main(String[] args) {
+        String jksFilePath = "path/to/keystore.jks";  // Replace with your JKS keystore path
+        String jksPassword = "yourJksPassword";       // Replace with your JKS keystore password
+        String privateKeyAlias = "yourPrivateKeyAlias"; // Replace with your private key alias
+        String pfxFilePath = "path/to/keystore.pfx";  // Path to save the PFX file
+        String pfxPassword = "yourPfxPassword";       // Password for the PFX file
+
+        try {
+            // Load the JKS keystore
+            FileInputStream jksInputStream = new FileInputStream(jksFilePath);
+            KeyStore jksKeystore = KeyStore.getInstance("JKS");
+            jksKeystore.load(jksInputStream, jksPassword.toCharArray());
+            jksInputStream.close();
+
+            // Load the private key and certificate chain from the JKS keystore
+            Key privateKey = jksKeystore.getKey(privateKeyAlias, jksPassword.toCharArray());
+            Certificate[] certChain = jksKeystore.getCertificateChain(privateKeyAlias);
+
+            // Create a new PKCS12 keystore
+            KeyStore pfxKeystore = KeyStore.getInstance("PKCS12");
+            pfxKeystore.load(null, null);  // Initialize an empty keystore
+
+            // Store the private key and certificate chain in the PKCS12 keystore
+            pfxKeystore.setKeyEntry(privateKeyAlias, privateKey, pfxPassword.toCharArray(), certChain);
+
+            // Save the PKCS12 keystore to a .pfx file
+            FileOutputStream pfxOutputStream = new FileOutputStream(pfxFilePath);
+            pfxKeystore.store(pfxOutputStream, pfxPassword.toCharArray());
+            pfxOutputStream.close();
+
+            System.out.println("Conversion complete. PFX file generated: " + pfxFilePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
