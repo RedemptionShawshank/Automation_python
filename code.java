@@ -219,3 +219,58 @@ public class TruststoreExporter {
 
 
 
+
+import java.io.*;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.util.Base64;
+
+public class JksToPemConverter {
+    public static void main(String[] args) throws Exception {
+        // Path to your keystore.jks file
+        String keystorePath = "path/to/keystore.jks";
+        // Keystore password
+        char[] keystorePassword = "keystorePassword".toCharArray();
+        // Alias for the key entry in the keystore
+        String alias = "yourAlias";
+        // Password for the private key (if different from the keystore password)
+        char[] keyPassword = "keyPassword".toCharArray();
+
+        // Load the JKS keystore
+        KeyStore keystore = KeyStore.getInstance("JKS");
+        try (FileInputStream fis = new FileInputStream(keystorePath)) {
+            keystore.load(fis, keystorePassword);
+        }
+
+        // Extract the private key
+        Key key = keystore.getKey(alias, keyPassword);
+        if (key instanceof PrivateKey) {
+            PrivateKey privateKey = (PrivateKey) key;
+
+            // Get the certificate chain
+            Certificate[] certChain = keystore.getCertificateChain(alias);
+
+            // Write private key and certificates to PEM format
+            try (FileWriter writer = new FileWriter("keystore.pem")) {
+                // Write the private key in PEM format
+                writer.write("-----BEGIN PRIVATE KEY-----\n");
+                writer.write(Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(privateKey.getEncoded()));
+                writer.write("\n-----END PRIVATE KEY-----\n");
+
+                // Write each certificate in the chain in PEM format
+                for (Certificate cert : certChain) {
+                    writer.write("-----BEGIN CERTIFICATE-----\n");
+                    writer.write(Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(cert.getEncoded()));
+                    writer.write("\n-----END CERTIFICATE-----\n");
+                }
+            }
+            System.out.println("Keystore successfully converted to keystore.pem");
+        } else {
+            throw new KeyStoreException("Alias does not contain a private key");
+        }
+    }
+}
+
+
+
+
