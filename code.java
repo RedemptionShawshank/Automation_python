@@ -162,3 +162,60 @@ public class TruststoreToPfxConverter {
 }
 
 
+
+
+
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.util.Base64;
+import java.util.Enumeration;
+
+public class TruststoreExporter {
+    public static void main(String[] args) {
+        String truststoreFilePath = "path/to/truststore.jks";  // Replace with your truststore path
+        String truststorePassword = "yourTruststorePassword";  // Replace with your truststore password
+
+        try {
+            // Load the JKS truststore
+            FileInputStream truststoreInputStream = new FileInputStream(truststoreFilePath);
+            KeyStore truststore = KeyStore.getInstance("JKS");
+            truststore.load(truststoreInputStream, truststorePassword.toCharArray());
+            truststoreInputStream.close();
+
+            // Iterate over the aliases in the JKS truststore
+            Enumeration<String> aliases = truststore.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                Certificate cert = truststore.getCertificate(alias);
+
+                if (cert != null) {
+                    // Convert the certificate to PEM format
+                    String certPem = convertToPem(cert);
+
+                    // Write the PEM to a file
+                    try (FileWriter fw = new FileWriter(alias + ".pem")) {
+                        fw.write(certPem);
+                    }
+                }
+            }
+
+            System.out.println("Certificates exported to PEM format.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String convertToPem(Certificate cert) throws Exception {
+        StringBuilder pem = new StringBuilder();
+        pem.append("-----BEGIN CERTIFICATE-----\n");
+        pem.append(Base64.getMimeEncoder(64, "\n".getBytes()).encodeToString(cert.getEncoded()));
+        pem.append("\n-----END CERTIFICATE-----\n");
+        return pem.toString();
+    }
+}
+
+
+
