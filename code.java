@@ -110,3 +110,55 @@ public class JksToPfxConverter {
     }
 }
 
+
+
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
+
+public class TruststoreToPfxConverter {
+    public static void main(String[] args) {
+        String truststoreFilePath = "path/to/truststore.jks";  // Replace with your truststore path
+        String truststorePassword = "yourTruststorePassword";  // Replace with your truststore password
+        String pfxFilePath = "path/to/truststore.pfx";         // Path to save the PFX file
+        String pfxPassword = "yourPfxPassword";                // Password for the PFX file
+
+        try {
+            // Load the JKS truststore
+            FileInputStream truststoreInputStream = new FileInputStream(truststoreFilePath);
+            KeyStore truststore = KeyStore.getInstance("JKS");
+            truststore.load(truststoreInputStream, truststorePassword.toCharArray());
+            truststoreInputStream.close();
+
+            // Create a new PKCS12 keystore
+            KeyStore pfxKeystore = KeyStore.getInstance("PKCS12");
+            pfxKeystore.load(null, null);  // Initialize an empty keystore
+
+            // Iterate over the aliases in the JKS truststore
+            Enumeration<String> aliases = truststore.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                Certificate cert = truststore.getCertificate(alias);
+
+                // Store the certificate in the PKCS12 keystore
+                if (cert != null) {
+                    pfxKeystore.setCertificateEntry(alias, cert);
+                }
+            }
+
+            // Save the PKCS12 keystore to a .pfx file
+            try (FileOutputStream pfxOutputStream = new FileOutputStream(pfxFilePath)) {
+                pfxKeystore.store(pfxOutputStream, pfxPassword.toCharArray());
+            }
+
+            System.out.println("Conversion complete. PFX file generated: " + pfxFilePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
