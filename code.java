@@ -325,4 +325,57 @@ public class JksToPfxConverter {
 
 
 
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Base64;
+import java.util.Enumeration;
+
+public class JksToPemConverter {
+
+    public static void main(String[] args) {
+        try {
+            // Paths to input JKS truststore and output PEM file
+            String jksPath = "path/to/truststore.jks";
+            String jksPassword = "yourJksPassword";
+
+            // Load the JKS truststore
+            KeyStore jksStore = KeyStore.getInstance("JKS");
+            try (FileInputStream fis = new FileInputStream(jksPath)) {
+                jksStore.load(fis, jksPassword.toCharArray());
+            }
+
+            // Iterate over the entries in the JKS truststore
+            Enumeration<String> aliases = jksStore.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                Certificate cert = jksStore.getCertificate(alias);
+
+                // Convert the certificate to PEM format and write to a file
+                if (cert instanceof X509Certificate) {
+                    X509Certificate x509Cert = (X509Certificate) cert;
+                    writeCertificateToPem(x509Cert, alias + ".pem");
+                }
+            }
+
+            System.out.println("Conversion to .pem completed successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error occurred during conversion.");
+        }
+    }
+
+    private static void writeCertificateToPem(X509Certificate cert, String fileName) throws IOException {
+        try (Writer writer = new FileWriter(fileName)) {
+            writer.write("-----BEGIN CERTIFICATE-----\n");
+            writer.write(Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(cert.getEncoded()));
+            writer.write("\n-----END CERTIFICATE-----\n");
+        }
+    }
+}
 
