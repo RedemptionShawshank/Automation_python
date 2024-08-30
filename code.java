@@ -274,3 +274,55 @@ public class JksToPemConverter {
 
 
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
+
+public class JksToPfxConverter {
+
+    public static void main(String[] args) {
+        try {
+            // Paths to input JKS truststore and output PFX file
+            String jksPath = "path/to/truststore.jks";
+            String pfxPath = "path/to/truststore.pfx";
+            String jksPassword = "yourJksPassword";
+            String pfxPassword = "yourPfxPassword";
+
+            // Load the JKS truststore
+            KeyStore jksStore = KeyStore.getInstance("JKS");
+            try (FileInputStream fis = new FileInputStream(jksPath)) {
+                jksStore.load(fis, jksPassword.toCharArray());
+            }
+
+            // Create a PKCS12 keystore to store the certificates
+            KeyStore pfxStore = KeyStore.getInstance("PKCS12");
+            pfxStore.load(null, pfxPassword.toCharArray());
+
+            // Iterate over the entries in the JKS truststore
+            Enumeration<String> aliases = jksStore.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                Certificate cert = jksStore.getCertificate(alias);
+                pfxStore.setCertificateEntry(alias, cert);
+            }
+
+            // Save the PKCS12 keystore to the output .pfx file
+            try (OutputStream os = new FileOutputStream(pfxPath)) {
+                pfxStore.store(os, pfxPassword.toCharArray());
+            }
+
+            System.out.println("Conversion to .pfx completed successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error occurred during conversion.");
+        }
+    }
+}
+
+
+
+
