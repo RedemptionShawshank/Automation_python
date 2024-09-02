@@ -439,3 +439,69 @@ public class JksToSinglePemConverter {
     }
 }
 
+
+
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
+
+public class JksToPfxConverter {
+
+    public static void main(String[] args) {
+        try {
+            // Load the keystore (which contains the private key)
+            String keystorePath = "keystore.jks";
+            String keystorePassword = "keystore-password";
+            String keyAlias = "your-key-alias";
+            KeyStore keystore = KeyStore.getInstance("JKS");
+            keystore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
+
+            // Extract the private key from the keystore
+            Key key = keystore.getKey(keyAlias, keystorePassword.toCharArray());
+            if (key == null) {
+                throw new Exception("No key found with alias: " + keyAlias);
+            }
+
+            // Load the truststore (which contains the certificates)
+            String truststorePath = "truststore.jks";
+            String truststorePassword = "truststore-password";
+            KeyStore truststore = KeyStore.getInstance("JKS");
+            truststore.load(new FileInputStream(truststorePath), truststorePassword.toCharArray());
+
+            // Create a new PKCS12 keystore
+            KeyStore pfxStore = KeyStore.getInstance("PKCS12");
+            pfxStore.load(null, null);
+
+            // Get all certificates from the truststore
+            Enumeration<String> aliases = truststore.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                Certificate certificate = truststore.getCertificate(alias);
+                pfxStore.setCertificateEntry(alias, certificate);
+            }
+
+            // Get the certificate chain for the private key
+            Certificate[] keyCertChain = keystore.getCertificateChain(keyAlias);
+
+            // Add the private key and its associated certificate chain to the PKCS12 keystore
+            pfxStore.setKeyEntry(keyAlias, key, keystorePassword.toCharArray(), keyCertChain);
+
+            // Save the PKCS12 keystore to a file
+            String pfxPath = "truststore.pfx";
+            String pfxPassword = "pfx-password";
+            try (FileOutputStream pfxOutputStream = new FileOutputStream(pfxPath)) {
+                pfxStore.store(pfxOutputStream, pfxPassword.toCharArray());
+            }
+
+            System.out.println("PKCS#12 keystore created successfully: " + pfxPath);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
