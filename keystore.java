@@ -55,3 +55,48 @@ public static KeyStore createKeyStoreFromTextFile(String filePath, String keysto
 
         return keyStore;
     }
+
+
+
+
+
+
+public static KeyStore createTrustStoreFromTextFile(String filePath) throws Exception {
+        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        trustStore.load(null, null);  // Initialize an empty keystore
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            StringBuilder certStringBuilder = new StringBuilder();
+            String alias = null;
+            boolean isCert = false;
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("alias_name")) {
+                    // Extract the alias name from the line
+                    alias = line.split(":")[0].trim();
+                } else if (line.startsWith("-----BEGIN CERTIFICATE-----")) {
+                    isCert = true;
+                    certStringBuilder = new StringBuilder();  // Start collecting certificate content
+                    certStringBuilder.append(line).append("\n");
+                } else if (line.startsWith("-----END CERTIFICATE-----")) {
+                    isCert = false;
+                    certStringBuilder.append(line).append("\n");
+
+                    // Load the certificate
+                    String certString = certStringBuilder.toString();
+                    try (ByteArrayInputStream certInputStream = new ByteArrayInputStream(certString.getBytes())) {
+                        X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(certInputStream);
+                        if (alias != null && !alias.isEmpty()) {
+                            trustStore.setCertificateEntry(alias, certificate);
+                        }
+                    }
+                } else if (isCert) {
+                    certStringBuilder.append(line).append("\n");
+                }
+            }
+        }
+
+        return trustStore;
+    }
