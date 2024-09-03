@@ -505,3 +505,88 @@ public class JksToPfxConverter {
         }
     }
 }
+
+
+
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.config.SslConfigs;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.StringReader;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Collections;
+import java.util.Properties;
+
+public class KafkaSslConsumerWithTextTruststore {
+
+    public static void main(String[] args) throws Exception {
+        // Path to your text file containing the PEM-like certificate content
+        String truststoreTextPath = "path/to/your-truststore-text-file.txt";
+
+        // Load the certificate from the text file
+        X509Certificate certificate = loadCertificateFromTextFile(truststoreTextPath);
+
+        // Create a TrustStore and add the certificate
+        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        trustStore.load(null, null);  // Initialize an empty keystore
+        trustStore.setCertificateEntry("ca-cert", certificate);  // Add the certificate to the keystore
+
+        // Initialize a TrustManagerFactory with the TrustStore
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trustStore);
+
+        // Set up the SSL context
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, tmf.getTrustManagers(), null);
+
+        // Set up Kafka consumer properties
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "your.kafka.broker:9092");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "your-consumer-group");
+
+        // SSL properties for Kafka
+        props.put(SslConfigs.SSL_PROTOCOL_CONFIG, "TLS");
+        props.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
+        props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, "");
+
+        // Create Kafka consumer
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+        consumer.subscribe(Collections.singletonList("your-topic"));
+
+        // Consume messages from Kafka
+        while (true) {
+            consumer.poll(Duration.ofMillis(1000)).forEach(record ->
+                System.out.printf("Consumed record with key %s and value %s%n", record.key(), record.value())
+            );
+        }
+    }
+
+    // Helper method to load certificate from text file
+    private static X509Certificate loadCertificateFromTextFile(String filePath) throws Exception {
+        StringBuilder certStringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                certStringBuilder.append(line).append("\n");
+            }
+        }
+
+        String certString = certStringBuilder.toString();
+
+        // Load the certificate using CertificateFactory
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        try (StringReader certReader = new StringReader(certString)) {
+            return (X509Certificate) certFactory.generateCertificate(new BufferedReader(certReader));
+        }
+    }
+}
